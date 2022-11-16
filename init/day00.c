@@ -5,6 +5,7 @@
 #include<malloc.h>
 #include<limits.h>
 
+// Comparator function example
 int comp(const void *a, const void *b)
 {
   const int *da = (const int *) a;
@@ -12,9 +13,12 @@ int comp(const void *a, const void *b)
   return (*da > *db) - (*da < *db);
 }
 
+// Example for calling qsort()
 //qsort(array,count,sizeof(),comp);
-// Full block if you need it █
 
+// Full block character for maps █
+
+// Read input file line by line (e.g., into an array)
 int readInput() {
         FILE * input;
         char * line = NULL;
