@@ -15,6 +15,7 @@ mv "day${DAY}/day00.c" "day${DAY}/day${DAY}.c"
 
 cd "day${DAY}"
 ls
+git add *
 make
 
 echo Now cd into "day${DAY}"
