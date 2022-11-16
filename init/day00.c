@@ -47,6 +47,7 @@ int readInput() {
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
+	int count = 0;
 
         input = fopen("input.txt", "r");
         if (input == NULL) {
@@ -66,8 +67,11 @@ int readInput() {
 		// Read into map
 		// for(x=0; x<MAXX; x++) map[y][x] = line[x];
 		// y++;
-	
-	
+
+		// Copy to string
+		//asprintf(&(inst[count]), "%s", line);	
+
+		count++;
 	}
 
 	fclose(input);
