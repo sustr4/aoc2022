@@ -10,7 +10,7 @@ mkdir "day${DAY}"
 cp init/* "day${DAY}/"
 sed -i "s/00/${DAY}/g" "day${DAY}/Makefile"
 mv "day${DAY}/day00.c" "day${DAY}/day${DAY}.c"
-
+touch "day${DAY}/input.txt"
 
 
 cd "day${DAY}"
