@@ -7,39 +7,12 @@
 
 // Boundary definitions, set as required
 #define MAXX 310
-#define MAXY 26
 
-// Point structure definition
 typedef struct {
 	char **x;
 	char **y;
 	char **f;
 } TRow;
-
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
-// Example for calling qsort()
-//qsort(array,count,sizeof(),comp);
-
-
-// Print a two-dimensional array
-void printMap (char **map) {
-	int x,y;
-	for(y=0; y<MAXY; y++) {
-		for(x=0; x<MAXX; x++) {
-			printf("%c", map[y][x]);
-		}
-		printf("\n");
-	}
-}
-// Full block character for maps █
-
 
 // Read input file line by line (e.g., into an array)
 TRow readInput() {
@@ -60,19 +33,7 @@ TRow readInput() {
 	inst.y=(char**)calloc(MAXX, sizeof(char*));
 	inst.f=(char**)calloc(MAXX, sizeof(char*));
 
-	// Allocate a two-dimensional arrray of chars
-	// int x=0, y=0;
-        // char **map=calloc(MAXY,sizeof(char*));
-	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
-
         while ((read = getline(&line, &len, input)) != -1) {
-
-		// Read into map
-		// for(x=0; x<MAXX; x++) map[y][x] = line[x];
-		// y++;
-
-		// Copy to string
-		//asprintf(&(inst[count]), "%s", line);	
 
 		asprintf(&(inst.x[count]),"%s",line);
 		asprintf(&(inst.y[count]),"%s",line+strlen(line)/2);
@@ -87,10 +48,7 @@ TRow readInput() {
         if (line)
         free(line);
 
-//	printMap(map);
-
 	return inst;
-//	return map;
 }
 
 int main(int argc, char *argv[]) {
