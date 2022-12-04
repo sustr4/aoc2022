@@ -42,7 +42,8 @@ void printMap (char **map) {
 
 
 // Read input file line by line (e.g., into an array)
-int readInput() {
+TPoint *readInput() {
+//int readInput() {
         FILE * input;
         char * line = NULL;
         size_t len = 0;
@@ -56,6 +57,7 @@ int readInput() {
 
 	// Allocate one-dimensional array of strings
 	// char **inst=(char**)calloc(MAXX, sizeof(char*));
+	TPoint *inst=(TPoint*)calloc(MAXX, sizeof(TPoint));
 
 	// Allocate a two-dimensional arrray of chars
 	// int x=0, y=0;
@@ -71,6 +73,11 @@ int readInput() {
 		// Copy to string
 		//asprintf(&(inst[count]), "%s", line);	
 
+		// Read into array
+		// sscanf(line,"%d,%d",
+		//	&(inst[count].x),
+		//	&(inst[count].y));
+
 		count++;
 	}
 
@@ -80,13 +87,14 @@ int readInput() {
 
 //	printMap(map);
 
-	return 0;
-//	return inst;
+//	return 0;
+	return inst;
 //	return map;
 }
 
 int main(int argc, char *argv[]) {
 
+//	int i=0;	
 	readInput();
 
 	return 0;
