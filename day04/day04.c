@@ -93,19 +93,19 @@ TPair *readInput() {
 
 int main(int argc, char *argv[]) {
 
+	int task=2;
 	int i;
 	TPair *pair = readInput();
 
 
 	for(i=0; pair[i].w; i++) {
 
-		if((pair[i].w>=pair[i].y)&&(pair[i].x<=pair[i].z)) {
-			printf(", %d %d %d %d\n", pair[i].w, pair[i].x, pair[i].y, pair[i].z);
-			continue; }
-		if((pair[i].w<=pair[i].y)&&(pair[i].x>=pair[i].z))
-			printf(". %d %d %d %d\n", pair[i].w, pair[i].x, pair[i].y, pair[i].z);
-
-
+		if((task==1)&&(((pair[i].w>=pair[i].y)&&(pair[i].x<=pair[i].z))||
+		            ((pair[i].w<=pair[i].y)&&(pair[i].x>=pair[i].z))))
+			printf("%d %d %d %d\n", pair[i].w, pair[i].x, pair[i].y, pair[i].z);
+		if((task==2)&&((pair[i].y>pair[i].x)||
+			    (pair[i].z<pair[i].w)))
+			printf("  %d %d %d %d\n", pair[i].w, pair[i].x, pair[i].y, pair[i].z);
 	}
 
 	return 0;
