@@ -146,6 +146,7 @@ int main(int argc, char *argv[]) {
 
 	int i=0;
 	int y;
+	int from, to;
 	move  = readInput();
 
 
@@ -154,9 +155,14 @@ int main(int argc, char *argv[]) {
 
 	for(i=0; move[i].count; i+=1) {
 		printf("%d %d %d\n", move[i].count, move[i].from, move[i].to);
+		from=move[i].from;
+		to=move[i].to;
 		for(y=0; y<move[i].count; y++) {
-			push(pop(move[i].from), move[i].to);
+			map[top[to]-y-1][to]=map[top[from]+move[i].count-1-y][from];
+			map[top[from]+move[i].count-1-y][from]=0;
 		}
+		top[from]+=move[i].count;
+		top[to]-=move[i].count;
 	}
 
 	printMap();
