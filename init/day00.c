@@ -94,8 +94,14 @@ TPoint *readInput() {
 
 int main(int argc, char *argv[]) {
 
+//	TPoint array;
 //	int i=0;	
+//	array = readInput();
 	readInput();
+
+//	for(i=0; array[i]; i++) {
+//		printf("%d\n", array[i]);
+//	}
 
 	return 0;
 }
