@@ -57,7 +57,7 @@ TPoint *readInput() {
 
 	// Allocate one-dimensional array of strings
 	// char **inst=(char**)calloc(MAXX, sizeof(char*));
-	TPoint *inst=(TPoint*)calloc(MAXX, sizeof(TPoint));
+	// TPoint *inst=(TPoint*)calloc(MAXX, sizeof(TPoint));
 
 	// Allocate a two-dimensional arrray of chars
 	// int x=0, y=0;
@@ -87,8 +87,8 @@ TPoint *readInput() {
 
 //	printMap(map);
 
-//	return 0;
-	return inst;
+	return 0;
+//	return inst;
 //	return map;
 }
 
