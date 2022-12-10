@@ -6,8 +6,8 @@
 #include<limits.h>
 
 // Boundary definitions, set as required
-#define MAXX 200
-#define MAXY 26
+#define MAXX 40
+#define MAXY 6
 
 // Point structure definition
 typedef struct {
@@ -15,29 +15,24 @@ typedef struct {
 	int val;
 } TCode;
 
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
-// Example for calling qsort()
-//qsort(array,count,sizeof(),comp);
-
-
 // Print a two-dimensional array
-void printMap (char **map) {
+void printMap (char map[MAXY][MAXX]) {
 	int x,y;
 	for(y=0; y<MAXY; y++) {
 		for(x=0; x<MAXX; x++) {
-			printf("%c", map[y][x]);
+			switch(map[y][x]) {
+				case 0:
+					printf(" "); break;
+				case 1:
+					printf("."); break;
+				case 2:
+					printf("█");
+			}
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
-// Full block character for maps █
 
 
 // Read input file line by line (e.g., into an array)
@@ -54,23 +49,9 @@ TCode *readInput() {
 		fprintf(stderr,"Failed to open input file\n");
 		exit(1); }
 
-	// Allocate one-dimensional array of strings
-	// char **inst=(char**)calloc(MAXX, sizeof(char*));
-	TCode *inst=(TCode*)calloc(MAXX, sizeof(TCode));
-
-	// Allocate a two-dimensional arrray of chars
-	// int x=0, y=0;
-        // char **map=calloc(MAXY,sizeof(char*));
-	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
+	TCode *inst=(TCode*)calloc(200, sizeof(TCode));
 
         while ((read = getline(&line, &len, input)) != -1) {
-
-		// Read into map
-		// for(x=0; x<MAXX; x++) map[y][x] = line[x];
-		// y++;
-
-		// Copy to string
-		//asprintf(&(inst[count]), "%s", line);	
 
 		// Read into array
 		switch(line[0]) {
@@ -93,10 +74,18 @@ TCode *readInput() {
         if (line)
         free(line);
 
-//	printMap(map);
-
 	return inst;
-//	return map;
+}
+
+char draw(int i, int x) {
+
+	int hor=i%40;
+	int spri=x%40;
+
+	if(spri>hor+1) return 1;
+	if(spri<hor-1) return 1;
+
+	return 2;
 }
 
 int run(TCode *code) {
@@ -104,31 +93,27 @@ int run(TCode *code) {
 	int cycle=0;
 	int x=1;
 	int sum=0;
+	char map[MAXY][MAXX];
+
+	memset(map,0,MAXY*MAXX*sizeof(char));
 
 	for(i=0; code[i].ins; i++) {
 		switch(code[i].ins) {
 			case 1: //noop
+				map[cycle/40][cycle%40]=draw(cycle, x);
 				cycle++;
-				if(!((cycle+20)%40)) {
-					sum+=x*cycle;
-					printf("%d %d %d %d\n", cycle, i, x, sum);
-				}
 				break;
 			case 2: //addx
+				map[cycle/40][cycle%40]=draw(cycle, x);
 				cycle++;
-				if(!((cycle+20)%40)) {
-					sum+=x*cycle;
-					printf("%d %d %d %d\n", cycle, i, x, sum);
-				}
+				map[cycle/40][cycle%40]=draw(cycle, x);
 				x+=code[i].val;
 				cycle++;
-				if(!((cycle+20)%40)) {
-					sum+=x*cycle;
-					printf("%d %d %d %d\n", cycle, i, x, sum);
-				}
 				break;
 		}
 	}
+
+	printMap(map);
 	return sum;
 }
 
