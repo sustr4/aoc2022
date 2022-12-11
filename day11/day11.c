@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<malloc.h>
 #include<limits.h>
+#include<assert.h>
 
 // Boundary definitions, set as required
 #define MAXX 76
@@ -29,7 +30,7 @@ int comp(const void *a, const void *b)
 {
   const int *da = (const int *) a;
   const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
+  return (*da < *db) - (*da > *db);
 }
 
 // Example for calling qsort()
@@ -48,11 +49,74 @@ void printMonkey (TMonkey *monk) {
 		printf("  Test: divisible by %d\n", monk[i].divby);
 		printf("    If true: throw to monkey %d\n", monk[i].throw[0]);
 		printf("    If false: throw to monkey %d\n", monk[i].throw[1]);
+		printf("  // inspections performed %d\n", monk[i].inspections);
 		printf("\n");
 	}
 }
 // Full block character for maps █
 
+int operate(TOperation op, int val) {
+	switch(op.op) {
+		case 1: // Add
+			return val + op.val;
+		case 2:
+			return val * op.val;
+		case 3:
+			return val * val;
+
+	}
+	assert((op.op>0)&&(op.op<4));
+	return 0;
+}
+
+void resort(TMonkey *monk) {
+	int i;
+	for(i=0; monk[i].operation.op; i++) {
+		qsort(monk[i].items,40,sizeof(int),comp);
+
+	}
+}
+
+void push(TMonkey *monk, int no, int val) {
+	int i;
+	for(i=0; monk[no].items[i]; i++);
+	monk[no].items[i]=val;
+}
+
+int gameround(TMonkey *monk) {
+	int m, i;
+	int new;
+
+	for(m=0; monk[m].operation.op; m++) { // Iterate through Monkeys
+		printf("Monkey %d:\n", m);
+		for(i=0; monk[m].items[i]; i++) {
+			printf("  Monkey inspects an item with a worry level of %d.\n", monk[m].items[i]);
+			new=operate(monk[m].operation, monk[m].items[i]);
+			printf("    Worry level is %d'd by %d to %d.\n",
+				monk[m].operation.op,
+				monk[m].operation.val,
+				new);
+			new/=3;
+			printf("    Monkey gets bored with item. Worry level is divided by 3 to %d.\n", new);
+			if(!(new%monk[m].divby)) { // Divisible
+				printf("    Current worry level is divisible by %d.\n", monk[m].divby);
+				printf("    Item with worry level %d is thrown to monkey %d.\n", new, monk[m].throw[0]);
+				monk[m].items[i]=0;
+				push(monk, monk[m].throw[0], new);
+			} 
+			else { // Non-divisible
+				printf("    Current worry level is not divisible by %d.\n", monk[m].divby);
+				printf("    Item with worry level %d is thrown to monkey %d.\n", new, monk[m].throw[1]);
+				monk[m].items[i]=0;
+				push(monk, monk[m].throw[1], new);
+			}
+			monk[m].inspections++;
+		}
+	}
+	resort(monk);
+
+	return 0;
+}
 
 // Read input file line by line (e.g., into an array)
 TMonkey *readInput() {
@@ -103,7 +167,7 @@ TMonkey *readInput() {
 					inst[monkey].operation.val=atoi(line+25);
 					break;
 				case '*': // Times
-					if(line[2]!='o') { // Times
+					if(line[25]!='o') { // Times
 						inst[monkey].operation.op=2;
 						inst[monkey].operation.val=atoi(line+25);
 					}
@@ -148,7 +212,12 @@ TMonkey *readInput() {
 
 int main(int argc, char *argv[]) {
 
+	int i;
 	TMonkey *monk = readInput();
+
+	for(i=0; i<20; i++) {
+		gameround(monk);
+	}
 
 	printMonkey(monk);
 
