@@ -52,7 +52,7 @@ void printMonkey (TMonkey *monk) {
 		printf("  Test: divisible by %d\n", monk[i].divby);
 		printf("    If true: throw to monkey %d\n", monk[i].throw[0]);
 		printf("    If false: throw to monkey %d\n", monk[i].throw[1]);
-		printf("  // inspections performed %d\n", monk[i].inspections);
+		printf("//  inspections performed %d\n", monk[i].inspections);
 		printf("\n");
 	}
 }
@@ -236,6 +236,19 @@ int main(int argc, char *argv[]) {
 
 	printf("Reduction factor was %d\n", fac);
 	printf("There are %d items left\n", items);
+
+	int max[2]={0,0};
+
+	for(i=0; monk[i].operation.op; i++) {
+		if(monk[i].inspections>=max[0]) {
+			max[1]=max[0];
+			max[0]=monk[i].inspections;
+		}
+		else if(monk[i].inspections>max[1])
+			max[1]=monk[i].inspections;
+	}
+
+	printf("Monkey business level %d * %d = %ld.\n", max[1], max[0], (long)max[1] * (long)max[0]);
 
 	return 0;
 }
