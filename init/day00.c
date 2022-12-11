@@ -78,6 +78,13 @@ TPoint *readInput() {
 		//	&(inst[count].x),
 		//	&(inst[count].y));
 
+		// Read tokens from single line
+		//char *token;
+		//token = strtok(line, ",");
+		//while( 1 ) {
+		//	if(!(token = strtok(NULL, ","))) break;
+		//}
+
 		count++;
 	}
 
