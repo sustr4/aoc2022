@@ -5,11 +5,14 @@
 #include<malloc.h>
 #include<limits.h>
 #include<assert.h>
+#include"lcmgcd.h"
 
 // Boundary definitions, set as required
 #define MAXX 76
 #define MAXY 26
 
+int fac=1;
+int items=0;
 
 typedef struct {
 	int op;
@@ -62,7 +65,7 @@ int operate(TOperation op, int val) {
 		case 2:
 			return val * op.val;
 		case 3:
-			return val * val;
+			return (int)(((long long)val * (long long)val) % fac);
 
 	}
 	assert((op.op>0)&&(op.op<4));
@@ -70,11 +73,18 @@ int operate(TOperation op, int val) {
 }
 
 void resort(TMonkey *monk) {
-	int i;
+	int i,y, ori = items;
+	items = 0;
+
 	for(i=0; monk[i].operation.op; i++) {
 		qsort(monk[i].items,40,sizeof(int),comp);
-
+		for(y=0; monk[i].items[y]; y++) {
+			monk[i].items[y]=monk[i].items[y] % fac;
+			items++;
+		}
 	}
+
+	assert(items==ori);	
 }
 
 void push(TMonkey *monk, int no, int val) {
@@ -96,8 +106,8 @@ int gameround(TMonkey *monk) {
 				monk[m].operation.op,
 				monk[m].operation.val,
 				new);
-			new/=3;
-			printf("    Monkey gets bored with item. Worry level is divided by 3 to %d.\n", new);
+//			new/=3;
+//			printf("    Monkey gets bored with item. Worry level is divided by 3 to %d.\n", new);
 			if(!(new%monk[m].divby)) { // Divisible
 				printf("    Current worry level is divisible by %d.\n", monk[m].divby);
 				printf("    Item with worry level %d is thrown to monkey %d.\n", new, monk[m].throw[0]);
@@ -112,8 +122,8 @@ int gameround(TMonkey *monk) {
 			}
 			monk[m].inspections++;
 		}
-	}
 	resort(monk);
+	}
 
 	return 0;
 }
@@ -153,11 +163,13 @@ TMonkey *readInput() {
 
 			token = strtok(line+18, ", ");
 			inst[monkey].items[i]=atoi(token);
+			items++;
 			while( 1 ) {
 				i++;
 				token = strtok(NULL, ", ");
 				if (!token) break;
 				inst[monkey].items[i]=atoi(token);
+				items++;
 			}
 		} else
 		if(line[2]=='O') { // Operation
@@ -177,6 +189,7 @@ TMonkey *readInput() {
 		} else
 		if(line[2]=='T') { // Test
 			inst[monkey].divby=atoi(line+21);
+			fac=lcm(fac, inst[monkey].divby);
 		} else
 		if(!strncmp(line,"    If true:", 8)) {
 			inst[monkey].throw[0]=atoi(line+29);
@@ -215,11 +228,14 @@ int main(int argc, char *argv[]) {
 	int i;
 	TMonkey *monk = readInput();
 
-	for(i=0; i<20; i++) {
+	for(i=0; i<10000; i++) {
 		gameround(monk);
 	}
 
 	printMonkey(monk);
+
+	printf("Reduction factor was %d\n", fac);
+	printf("There are %d items left\n", items);
 
 	return 0;
 }
