@@ -17,18 +17,6 @@ typedef struct {
 	int y;
 } TPoint;
 
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
-// Example for calling qsort()
-//qsort(array,count,sizeof(),comp);
-
-
 // Print a two-dimensional array
 void printMap (char **map, int **dist) {
 	int x,y;
@@ -39,12 +27,9 @@ void printMap (char **map, int **dist) {
 		printf("\n");
 	}
 }
-// Full block character for maps █
-
 
 // Read input file line by line (e.g., into an array)
 char **readInput() {
-//int readInput() {
         FILE * input;
         char * line = NULL;
         size_t len = 0;
@@ -56,10 +41,6 @@ char **readInput() {
 		fprintf(stderr,"Failed to open input file\n");
 		exit(1); }
 
-	// Allocate one-dimensional array of strings
-	// char **inst=(char**)calloc(MAXX, sizeof(char*));
-	// TPoint *inst=(TPoint*)calloc(MAXX, sizeof(TPoint));
-
 	// Allocate a two-dimensional arrray of chars
 	int x=0, y=0;
         char **map=calloc(MAXY,sizeof(char*));
@@ -70,21 +51,6 @@ char **readInput() {
 		// Read into map
 		for(x=0; x<MAXX; x++) map[y][x] = line[x];
 		y++;
-
-		// Copy to string
-		//asprintf(&(inst[count]), "%s", line);	
-
-		// Read into array
-		// sscanf(line,"%d,%d",
-		//	&(inst[count].x),
-		//	&(inst[count].y));
-
-		// Read tokens from single line
-		//char *token;
-		//token = strtok(line, ",");
-		//while( 1 ) {
-		//	if(!(token = strtok(NULL, ","))) break;
-		//}
 
 		count++;
 	}
@@ -100,10 +66,6 @@ char **readInput() {
 
 int main(int argc, char *argv[]) {
 
-//	TPoint array;
-//	int i=0;	
-//	array = readInput();
-
 	char **map;
 	int x=0, y=0;
 	int change=1;
@@ -111,7 +73,6 @@ int main(int argc, char *argv[]) {
 	for(int iter=0; iter<MAXY; iter++) dist[iter]=calloc(MAXX,sizeof(int));
 	int ny, nx;
 	int steps=1;
-	int ey,ex;
 
 	TPoint dir[] = {{-1,0}, {1,0}, {0,-1}, {0,1}};
 
@@ -119,10 +80,9 @@ int main(int argc, char *argv[]) {
 
 	for(y=0; y<MAXY; y++) {
 		for(x=0; x<MAXX; x++) {
-			if(map[y][x]=='S') dist[y][x]=1; 
 			if(map[y][x]=='E') {
-				ey=y; ex=x;
-				map[y][x]='z'; 
+				map[y][x]='z';
+				dist[y][x]=1;
 			}
 	}}
 			
@@ -142,7 +102,7 @@ int main(int argc, char *argv[]) {
 						if(ny>=MAXY) continue;
 						if(dist[ny][nx]) continue;
 
-						if((map[ny][nx]<=map[y][x]+1)||(map[y][x]=='S')) {
+						if((map[ny][nx]>=map[y][x])||(map[ny][nx]==map[y][x]-1)||(map[y][x]=='E')) {
 							change++;
 							dist[ny][nx]=dist[y][x]+1;
 						}
@@ -152,17 +112,21 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		printf("Round %d: %d changes\n", steps, change);
-
 	}	
 
+	int min=INT_MAX;
 
-//	for(i=0; array[i]; i++) {
-//		printf("%d\n", array[i]);
-//	}
+	for(y=0; y<MAXY; y++) {
+		for(x=0; x<MAXX; x++) {
+			if((map[y][x]=='a')&&(dist[y][x])&&(dist[y][x]-1<min)) {
+				min=dist[y][x]-1;
+				printf("New best minimum at [%d,%d]: %d\n", x, y, min);
+			} 
+	}}
 
-		printMap(map, dist);
 
-		printf("Dist to E [%d,%d] is %d\n", ex, ey, dist[ey][ex]-1);
+
+//	printMap(map, dist);
+
 	return 0;
 }
