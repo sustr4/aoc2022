@@ -4,106 +4,228 @@
 #include<stdlib.h>
 #include<malloc.h>
 #include<limits.h>
+#include<assert.h>
 
 // Boundary definitions, set as required
 #define MAXX 450
-#define MAXY 26
+#define MAXY 50
 
 // Point structure definition
 typedef struct {
-	int x;
-	int y;
-	int z;
-} TPoint;
+	int type; // 0: null; 1: int; 2: list
+	int val;
+	void *right;
+	void *up;
+} TList;
 
-int comp(char *a, char *b)
+TList *list;
+int cnt = 0;
+
+// Comparator function example
+int comp(const void *a, const void *b)
 {
-	int shorter = strlen(a);
-	if(shorter>strlen(b)) shorter=strlen(b);
-
-	for(int i=0; i<shorter; i++) {
-		if((a[i]>='0')&&
-		   (a[i]<='9')&&
-		   (b[i]>='0')&&
-		   (b[i]<='9')) {
-			if(a[i]<b[i]) return -1;
-			if(a[i]>b[i]) return 1;
-		}
-
-		if((a[i]=='[')&&(b[i]==']')) return 1;
-		if((a[i]==']')&&(b[i]=='[')) return -1;
-
-	}
-
-	if(strlen(a)<strlen(b)) return -1;
-	if(strlen(a)>strlen(b)) return 1;
-
-	return 0;	
+  const int *da = (const int *) a;
+  const int *db = (const int *) b;
+  return (*da > *db) - (*da < *db);
 }
 
-int insert(char *s, int p) {
-	char *tail;
-	int i;
-	int depth =0;
+// Example for calling qsort()
+//qsort(array,count,sizeof(),comp);
 
-	//Make room left
-	tail=strdup(s+p);
-	strcpy(s+p+1, tail);
-	free(tail);
 
-	s[p]='[';
-
-	for(i=p+1; i<strlen(s); i++) {
-		if(s[i]=='[') {
-			depth++;
-			continue;
+// Print a two-dimensional array
+void printMap (char **map) {
+	int x,y;
+	for(y=0; y<MAXY; y++) {
+		for(x=0; x<MAXX; x++) {
+			printf("%c", map[y][x]);
 		}
-		if(s[i]==']') {
-			if(depth>0) {
-				depth--;
-				continue;
-			}
-			else break;
-		}
-		if(s[i]==',')
-			if(depth==0) break;
+		printf("\n");
+	}
+}
+// Full block character for maps █
+
+int compItem(TList *a, TList *b) {
+
+	int ret;
+
+	printf("A %d:%d, B %d:%d\n", a->type, a->val, b->type, b->val);
+
+	if(a==NULL) return -1;
+	if(b==NULL) return 1;
+
+	if((a->type==0)&&(b->type>0)) return -1;
+	if((a->type>0)&&(b->type==0)) return 1;
+
+	if((a->type==0)&&(b->type==0)) return 0;
+	if((a->type==1)&&(b->type==1)) {
+		if(a->val < b->val) return -1;
+		if(a->val > b->val) return 1;
 	}
 
-	//Make room left
-	tail=strdup(s+i);
-	strcpy(s+i+1, tail);
-	free(tail);
+	if((a->type==2)&&(b->type==2)) {
+		ret = compItem(a->up, b->up);
+		if(ret) return ret;
+	}
 
-	s[i]=']';
 	
-	return 1;
+	if((a->type==1)&&(b->type==2)) {
+		TList wrap;
+		TList wrapped;
+		wrap.type=2;
+		wrap.right=NULL;
+		wrap.up=&wrapped;
+		wrapped.right=NULL;
+		wrapped.up=NULL;
+		wrapped.type=1;
+		wrapped.val=a->val;
+		ret = compItem(&wrap, b);
+		if(ret) return ret;
+	}
+	if((a->type==2)&&(b->type==1)) {
+		TList wrap;
+		TList wrapped;
+		wrap.type=2;
+		wrap.right=NULL;
+		wrap.up=&wrapped;
+		wrapped.right=NULL;
+		wrapped.up=NULL;
+		wrapped.type=1;
+		wrapped.val=b->val;
+		ret = compItem(a, &wrap);
+		if(ret) return ret;
+	}
+
+
+	if((!a->right)&&(b->right)) return -1;
+	if((a->right)&&(!b->right)) return 1;
+
+	if((a->right)&&(b->right)) {
+		ret=compItem(a->right, b->right);
+		if(ret) return ret;
+	}
+
+	return 0;
+}
+
+int printItem(TList *a) {
+
+	switch(a->type) {
+		case 0: 
+			return 0;
+		case 1:
+			printf("%d",a->val);
+			if(a->right) {
+				printf(",");
+				printItem(a->right);
+			}
+			return 1;
+		case 2:
+			printf("[");
+			if(a->up) printItem(a->up);
+			printf("]");
+			if(a->right) {
+				printf(",");
+				printItem(a->right);
+			}
+			return(2);
+	}
+
+	return 0;
+}
+
+int addItem(TList *a, char *s) {
+
+	char *sub;
+	int depth;
+	int i=0;
+	static int d = 0;
+
+//	printf("%d ###IN: \"%s\"\n", d, s);
+
+	d++;
+
+	while(i<strlen(s)) {
+//		printf("     %d Loop start looking at %d of \"%s\", which is %c\n", d, i, s, s[i]);
+		if((s[i]>='0')&&(s[i]<='9')) {
+//			printf("     %d Add No. %d\n", d, s[i]-'0'); 
+			a->type=1;
+			a->val=atoi(s+i);
+			while((s[i]>='0')&&(s[i]<='9')) i++;
+		} else
+		if(s[i]=='[') {
+			sub=strdup(s+i);
+			depth=1;
+			for(int y=1; y<strlen(sub); y++) {
+				if(depth) {
+					if(sub[y]=='[') depth++;
+					if(sub[y]==']') depth--;
+				}
+				else sub[y]=0;
+			}
+//			printf("     %d Add new list %s\n", d, sub); 
+			sub[strlen(sub)-1]=0;
+		
+			a->type=2;
+			a->up=(TList*)calloc(1,sizeof(TList));
+			addItem(a->up, sub+1);
+			i+=strlen(sub)+1;
+			free(sub);
+		}
+
+		if(s[i]==',') i++;
+
+
+		if(i<strlen(s)) {		
+//			printf("     %d Shifting right\n", d); 
+			a->right=(TList*)calloc(1,sizeof(TList));
+			a=a->right;
+		}
+	}
+
+	d--;
+
+	return i;
 }
 
 // Read input file line by line (e.g., into an array)
-char **readInput() {
+TList *readInput() {
+//int readInput() {
         FILE * input;
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
 	int count = 0;
-	int stringno = 0;
 
         input = fopen("input.txt", "r");
         if (input == NULL) {
 		fprintf(stderr,"Failed to open input file\n");
 		exit(1); }
 
-	char **strings=(char**)calloc(MAXX, sizeof(char*));
-	
+	// Allocate one-dimensional array of strings
+	// char **inst=(char**)calloc(MAXX, sizeof(char*));
+	list=(TList*)calloc(MAXX, sizeof(TList));
+
+	// Allocate a two-dimensional arrray of chars
+	// int x=0, y=0;
+        // char **map=calloc(MAXY,sizeof(char*));
+	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
+
         while ((read = getline(&line, &len, input)) != -1) {
 
-		if(strlen(line)>1) {
-			strings[stringno]=calloc(2048,sizeof(char));
-			line[strlen(line)-1]=0;
-			strcpy(strings[stringno],line);
-			stringno++;
+		line[strlen(line)-1]=0;
+
+		if(strlen(line)>0) {
+//			printf(" orig: %s\n", line);
+			addItem(&(list[cnt]), line);
+
+//			printf(" orig: %s\n  new: ", line);
+//			printItem(&(list[cnt]));
+//			printf("\n");
+//			if(cnt%2) printf("\n");
+			cnt++;
 		}
-			
+
 		count++;
 	}
 
@@ -111,67 +233,41 @@ char **readInput() {
         if (line)
         free(line);
 
-	return strings;
+//	printMap(map);
+
+	return 0;
+//	return inst;
+//	return map;
 }
 
 int main(int argc, char *argv[]) {
 
-
-//	TPoint array;
-	int i=0, ya,yb;	
-//	array = readInput();
-	char *a, *b;
-	char **strings = readInput();
-	int change;
-	int pairno = 1;
+	TList a,b;
+	int i;
 	int c;
-	int sum=0;
+	int sum = 0;
+	int pairno = 1;
+	int eq = 0;
 
-//	for(i=4; i<6; i+=2) {
-	for(i=0; (strings[i])&&(strings[i+1]); i+=2) {
-		a=strings[i];
-		b=strings[i+1];
+	readInput();
 
-		change=1;
-
-		while(change) {
-			change=0;
-
-			ya=0; yb=0;
-
-			while((ya<strlen(a))&&(yb<strlen(b))) {
-				if((a[ya]=='[')&&(b[yb]!='[')) {
-//					printf("compAring %c %c\n", a[ya], b[yb]);
-					if(a[ya+1]==']') {
-						ya+=2;
-						continue;
-					}
-					change = insert(b, yb);
-				}
-				if((a[ya]!='[')&&(b[yb]=='[')) {
-//					printf("compBring %c %c\n", a[ya], b[yb]);
-					if(b[yb+1]==']') {
-						yb+=2;
-						continue;
-					}
-					change = insert(a, ya);
-				}
-
-				ya++;
-				yb++;
-			}
-
-		}
-
-		c=comp(a,b);
-
-		printf("%c a: %s\n%c b: %s\n", (c<0)?'*':' ', a, (c>0)?'*':' ', b);
-
-		if(c<=0) sum+=pairno;
+	for(i=0; i<cnt; i+=2) {
+		printf("pairno %d\n", pairno);
+		a=list[i];
+		b=list[i+1];
+		c=compItem(&a,&b);
+		printf("%c ", c<0?'*':' ');
+		printItem(&(a));
+		printf("\n");
+		printf("%c ", c>0?'*':' ');
+		printItem(&(b));
+		printf("\n\n");
+		if(c<0) sum+=pairno;
+		if(c==0) eq++;
 		pairno++;
 	}
 
-	printf("Sum: %d\n", sum);
+	printf("Pair sum %d, %d equal\n", sum, eq);
 
 	return 0;
 }
