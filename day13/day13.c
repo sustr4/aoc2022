@@ -21,14 +21,6 @@ typedef struct {
 TList *list;
 int cnt = 0;
 
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
 // Example for calling qsort()
 //qsort(array,count,sizeof(),comp);
 
@@ -45,11 +37,9 @@ void printMap (char **map) {
 }
 // Full block character for maps █
 
-int compItem(TList *a, TList *b) {
+int compItem(const TList *a, const TList *b) {
 
 	int ret;
-
-	printf("A %d:%d, B %d:%d\n", a->type, a->val, b->type, b->val);
 
 	if(a==NULL) return -1;
 	if(b==NULL) return 1;
@@ -106,6 +96,14 @@ int compItem(TList *a, TList *b) {
 	}
 
 	return 0;
+}
+
+// Comparator function example
+int comp(const void *a, const void *b)
+{
+  const TList *da = (const TList *) a;
+  const TList *db = (const TList *) b;
+  return compItem(da, db);
 }
 
 int printItem(TList *a) {
@@ -229,6 +227,15 @@ TList *readInput() {
 		count++;
 	}
 
+	// For task 2:
+	line=strdup("[[6]]");
+	addItem(&(list[cnt]), line);
+	cnt++;
+	line=strdup("[[2]]");
+	addItem(&(list[cnt]), line);
+	cnt++;
+
+
 	fclose(input);
         if (line)
         free(line);
@@ -248,20 +255,20 @@ int main(int argc, char *argv[]) {
 	int sum = 0;
 	int pairno = 1;
 	int eq = 0;
+	TList **plist = (void*)calloc(MAXX,sizeof(void*));
 
 	readInput();
 
 	for(i=0; i<cnt; i+=2) {
-		printf("pairno %d\n", pairno);
 		a=list[i];
 		b=list[i+1];
 		c=compItem(&a,&b);
-		printf("%c ", c<0?'*':' ');
+/*		printf("%c ", c<0?'*':' ');
 		printItem(&(a));
 		printf("\n");
 		printf("%c ", c>0?'*':' ');
 		printItem(&(b));
-		printf("\n\n");
+		printf("\n\n");*/
 		if(c<0) sum+=pairno;
 		if(c==0) eq++;
 		pairno++;
@@ -269,5 +276,22 @@ int main(int argc, char *argv[]) {
 
 	printf("Pair sum %d, %d equal\n", sum, eq);
 
+	for(i=0; i<cnt; i++) plist[i]=&(list[i]);
+	qsort(list,cnt,sizeof(TList),comp);
+
+	int p1 = 0, p2 = 0;
+	TList *mk;
+
+	mk=(TList*)calloc(2, sizeof(TList));
+
+	addItem(&mk[0], "[[2]]");
+	addItem(&mk[1], "[[6]]");
+
+	for(i=0; i<cnt; i++) {
+		if((!p1) && (!compItem(&(list[i]), &(mk[0])))) p1=i+1;
+		if((!p2) && (!compItem(&(list[i]), &(mk[1])))) p2=i+1;
+	}
+
+	printf("Divider positions %d * %d = %d\n", p1, p2, p1 * p2);
 	return 0;
 }
