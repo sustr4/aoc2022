@@ -24,6 +24,11 @@ typedef struct {
 	int rad;
 } TSensor;
 
+typedef struct {
+	int from;
+	int to;
+} TIntersect;
+
 // Comparator function example
 int comp(const void *a, const void *b)
 {
@@ -150,15 +155,18 @@ int main(int argc, char *argv[]) {
 //		if(array[i].by>maxy) maxy=array[i].by;
 	}
 
-	printf("    ");
-	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("%5d", x+5);
-	printf("\n");
-	printf("    ");
-	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("    |");
-	printf("\n");
+//	printf("    ");
+//	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("%5d", x+5);
+//	printf("\n");
+//	printf("    ");
+//	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("    |");
+//	printf("\n");
 
-	for(y=miny-maxrad; y<=maxy+maxrad; y++) {
-		printf("%3d ",y);
+	printf("Limits:\n X: <%d,%d>\n Y: <%d,%d>\n", minx, maxx, miny, maxy);
+
+	y=2000000;
+//	for(y=miny-maxrad; y<=maxy+maxrad; y++) {
+//		printf("%3d ",y);
 	for(x=minx-maxrad; x<=maxx+maxrad; x++) {
 		cov=0;
 		for(i=0; i<count; i++) {
@@ -167,14 +175,14 @@ int main(int argc, char *argv[]) {
 				cov++;
 			}
 		}
-		if((y==10)&&cov&&isFree(array,x,y)) {
+		if((y==2000000)&&cov&&isFree(array,x,y)) {
 			cnt++;
 		}
-		if(cov) printDot(array, x, y, '#');
-		else printDot(array, x, y, '.');
+//		if(cov) printDot(array, x, y, '#');
+//		else printDot(array, x, y, '.');
 	}
-	printf("\n");
-	}
+//	printf("\n");
+//	}
 	printf("\nCount: %d\nMax rad: %d\nMin X: %d\n", cnt, maxrad, minx);
 
 	return 0;
