@@ -24,12 +24,27 @@ typedef struct {
 	int rad;
 } TSensor;
 
+typedef struct {
+	int from;
+	int to;
+} TIntersect;
+
 // Comparator function example
 int comp(const void *a, const void *b)
 {
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
+  const TIntersect *da = (const TIntersect *) a;
+  const TIntersect *db = (const TIntersect *) b;
+  if((!da->from)&&(!da->to)) {
+	if((!db->from)&&(!db->to)) return 0;
+	return 1;
+  }
+  if((!db->from)&&(!db->to)) {
+	return -1;
+  }
+
+  int mr = (da->from > db->from) - (da->from < db->from);
+  if(mr) return mr;
+  else return  (da->to > db->to) - (da->to < db->to);
 }
 
 // Example for calling qsort()
@@ -127,11 +142,31 @@ int printDot(TSensor *array, int x, int y, char c) {
 	return 0;
 }
 
+TIntersect *intersect(TSensor *array, int y) {
+	int i;
+	TIntersect *is;
+
+	is=(TIntersect*)malloc(count*sizeof(TIntersect));
+
+	for(i=0; i<count; i++) {
+		if((y>=array[i].y-array[i].rad)&&(y<=array[i].y+array[i].rad)) {
+			is[i].from=array[i].x-(array[i].rad-abs(array[i].y-y));
+			is[i].to=array[i].x+(array[i].rad-abs(array[i].y-y));
+		}
+		else memset(&(is[i]), 0, sizeof(TIntersect));
+	}
+
+	qsort(is,count,sizeof(TIntersect),comp);
+
+	return is;
+}
+
 int main(int argc, char *argv[]) {
 
 	TSensor *array;
-	int i=0, x, y, cnt=0, cov;	
+	int i=0, y, j, k, found, candi;	
 	array = readInput();
+	TIntersect *is;
 
 	for(i=0; i<count; i++) {
 		printf("%d,", array[i].x);
@@ -139,43 +174,43 @@ int main(int argc, char *argv[]) {
 		printf("%d,", array[i].bx);
 		printf("%d,", array[i].by);
 		printf("%d\n", array[i].rad);
-		if(array[i].x<minx) minx=array[i].x;
-//		if(array[i].bx<minx) minx=array[i].bx;
-		if(array[i].x>maxx) maxx=array[i].x;
-//		if(array[i].bx>maxx) maxx=array[i].bx;
-		if(array[i].rad>maxrad) maxrad=array[i].rad;
-		if(array[i].y<miny) miny=array[i].y;
-//		if(array[i].by<miny) miny=array[i].by;
-		if(array[i].y>maxy) maxy=array[i].y;
-//		if(array[i].by>maxy) maxy=array[i].by;
+
+
 	}
 
-	printf("    ");
-	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("%5d", x+5);
-	printf("\n");
-	printf("    ");
-	for(x=minx-maxrad; x<=maxx+maxrad; x+=5) printf("    |");
-	printf("\n");
+	for(y=0; y<=4000000; y++) {
+		is=intersect(array, y);
+		
+/*		if(y==20) {
 
-	for(y=miny-maxrad; y<=maxy+maxrad; y++) {
-		printf("%3d ",y);
-	for(x=minx-maxrad; x<=maxx+maxrad; x++) {
-		cov=0;
-		for(i=0; i<count; i++) {
-//			if(dist(x,2000000,array[i].x,array[i].y)<=array[i].rad) cov++;
-			if(dist(x,y,array[i].x,array[i].y)<=array[i].rad) {
-				cov++;
+			for(i=0; (is[i].from)&&(is[i].to); i++) {
+				printf("%3d -- %3d \t(%3d, %3d -> %2d)\n", is[i].from, is[i].to,
+					array[i].x,
+					array[i].y,
+					array[i].rad);
+			}
+		}*/
+
+		for(i=0; (is[i].from)&&(is[i].to); i++) {
+			for(j=i+1; (is[j].from)&&(is[j].to); j++) {
+				if(is[i].to==is[j].from-2) {
+					candi=is[i].to+1;
+					found=1;
+					for(k=0; (is[k].from)&&(is[k].to); k++) {
+						if((candi>=is[k].from)&&(candi<=is[k].to)) {
+							found=0;
+							break;
+						}
+					}
+					if(found) printf("Candidate: %d, %d \t %ld \t(<%d,%d> <%d,%d>)\n", is[i].to+1, y, (long)4000000*((long)is[i].to+1) + (long)y, is[i].from, is[i].to, is[j].from, is[j].to);
+				}
 			}
 		}
-		if((y==10)&&cov&&isFree(array,x,y)) {
-			cnt++;
-		}
-		if(cov) printDot(array, x, y, '#');
-		else printDot(array, x, y, '.');
+
+
+		free(is);
 	}
-	printf("\n");
-	}
-	printf("\nCount: %d\nMax rad: %d\nMin X: %d\n", cnt, maxrad, minx);
+
 
 	return 0;
 }
