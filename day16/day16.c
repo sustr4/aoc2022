@@ -9,8 +9,6 @@
 #define MAXX 2527
 #define MAXY 26
 
-#define TIME 30
-
 int *stock;
 
 int **steps;
@@ -43,8 +41,9 @@ int comp(const void *a, const void *b)
 void printMap (int **map, int size) {
 	int x,y;
 	for(y=1; y<=size; y++) {
+		printf("%3d ", y);
 		for(x=1; x<=size; x++) {
-			printf("%2d", map[y][x]);
+			printf("%3d", map[y][x]);
 		}
 		printf("\n");
 	}
@@ -63,7 +62,7 @@ int valveNo(char *s) {
 	return i;
 }
 
-int dostep(Tvalve *valve, int tgt, int time, int score) {
+int dostep(int TIME, Tvalve *valve, int tgt, int time, int score, int filter) {
 	int i;
 	int dura;
 	int some = 0;
@@ -71,7 +70,7 @@ int dostep(Tvalve *valve, int tgt, int time, int score) {
 	if(time>=TIME) {
 		if(score>max) {
 			max=score;
-			printf("New maximum %d/%d\n", score, max);
+//			printf("New maximum %d/%d\n", score, max);
 		}
 		return 0;
 	}
@@ -79,11 +78,12 @@ int dostep(Tvalve *valve, int tgt, int time, int score) {
 	for(i=1; valve[i].flow; i++) {
 		if(i==tgt) continue;
 		if(valve[i].open) continue;
+		if(filter&(1<<(i-1))) continue;
 
 		some=1;
 		dura=dist[tgt][i]+1;
 		valve[i].open=1;
-		dostep(valve, i, time+dura, score + (TIME-dura-time) * valve[i].flow);
+		dostep(TIME, valve, i, time+dura, score + (TIME-dura-time) * valve[i].flow, filter);
 		valve[i].open=0;
 
 	}
@@ -91,7 +91,7 @@ int dostep(Tvalve *valve, int tgt, int time, int score) {
 	if(!some) {
 		if(score>max) {
 			max=score;
-			printf("No more moves. New maximum %d/%d\n", score, max);
+//			printf("No more moves. New maximum %d/%d\n", score, max);
 		}
 	}
 	return 0;
@@ -244,7 +244,31 @@ int main(int argc, char *argv[]) {
 
 	printf("Starting at position %d (%s)\n", start, valve[start].code);
 
-	dostep(valve, start, 0, 0);
+	int total;
+	int m1, m2;
+	int totmax=0;
+	unsigned int filter;
+
+	dostep(30, valve, start, 0, 0, 0);
+	printf("Task 1: %d\n", max);
+	
+
+
+	for(filter=0; filter<(1<<valves); filter++) {
+		max=0;
+		for(i=1; valve[i].flow; i++) valve[i].open=0;
+		dostep(26, valve, start, 0, 0, filter);
+		m1 = max;
+		max=0;
+		for(i=1; valve[i].flow; i++) valve[i].open=0;
+		dostep(26, valve, start, 0, 0, ~filter);
+		m2 = max;
+		total = m1+m2;
+		if(totmax<total) {
+			totmax=total;
+			printf("%5d (%u) Total: %d + %d = %d/%d\n", filter, ~filter, m1, m2, total, totmax);
+		}
+	}
 
 	return 0;
 }
