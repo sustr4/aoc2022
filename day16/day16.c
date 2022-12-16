@@ -8,10 +8,16 @@
 // Boundary definitions, set as required
 #define MAXX 2527
 #define MAXY 26
+
+#define TIME 30
+
 int *stock;
 
 int **steps;
 int **score;
+int **dist;
+
+int max=0;
 
 // Point structure definition
 typedef struct {
@@ -34,11 +40,11 @@ int comp(const void *a, const void *b)
 
 
 // Print a two-dimensional valve
-void printMap (char **map) {
+void printMap (int **map, int size) {
 	int x,y;
-	for(y=0; y<MAXY; y++) {
-		for(x=0; x<MAXX; x++) {
-			printf("%c", map[y][x]);
+	for(y=1; y<=size; y++) {
+		for(x=1; x<=size; x++) {
+			printf("%2d", map[y][x]);
 		}
 		printf("\n");
 	}
@@ -55,6 +61,40 @@ int valveNo(char *s) {
 	}
 	stock[i]=hash;
 	return i;
+}
+
+int dostep(Tvalve *valve, int tgt, int time, int score) {
+	int i;
+	int dura;
+	int some = 0;
+
+	if(time>=TIME) {
+		if(score>max) {
+			max=score;
+			printf("New maximum %d/%d\n", score, max);
+		}
+		return 0;
+	}
+
+	for(i=1; valve[i].flow; i++) {
+		if(i==tgt) continue;
+		if(valve[i].open) continue;
+
+		some=1;
+		dura=dist[tgt][i]+1;
+		valve[i].open=1;
+		dostep(valve, i, time+dura, score + (TIME-dura-time) * valve[i].flow);
+		valve[i].open=0;
+
+	}
+
+	if(!some) {
+		if(score>max) {
+			max=score;
+			printf("No more moves. New maximum %d/%d\n", score, max);
+		}
+	}
+	return 0;
 }
 
 // Read input file line by line (e.g., into an valve)
@@ -142,51 +182,22 @@ Tvalve *readInput() {
 //	return map;
 }
 
-int setBit(int stat, int no) {
-	return(stat | (1<<(no-1)));
-}
 
-int checkBit(int stat, int no) {
-	return(stat & (1<<(no-1)));
-}
 
-int capacity(Tvalve *valve, int stat) {
-	int i;
-	int sum=0;
-
-	for(i = 0; valve[i+1].flow; i++) {
-		if(stat & (1<<i)) sum+= valve[i+1].flow;
-	}
-	return sum;
-}
-
-void printSit(int stat, int pos, char *code) {
-	int i;
-        for(i=0; i<15; i++) {
-               printf("%3d", i);
-        }
-        printf("\n");
-        for(i=0; i<15; i++) {
-                printf("%3d", (stat&1<<i)>>i);
-        }
-
-        printf("\tLoc: %2d (%s)\n", pos, code);
-}
 
 
 int main(int argc, char *argv[]) {
 
 	stock = (int*)calloc(MAXX, sizeof(int));
 	Tvalve *valve;
-	int i=0;
-	int pos, state;	
+	int i=0,j;
 	valve = readInput();
 	int step;
-	int newstate;
-	int newscore;
 
 	int valves = 0;
 	int positions = 0;
+
+	int start = 0;
 
 	for(i=0; i<MAXX; i++) {
 		if(valve[i].next[0]) {
@@ -204,67 +215,36 @@ int main(int argc, char *argv[]) {
 	printf("Valves: %d\n", valves);
 	printf("Positions: %d\n", positions);
 
-	steps=(int**)calloc(positions+1, sizeof(int*));
-	for(i=0; i<=positions; i++) steps[i]=(int*)calloc(1<<valves,sizeof(int));
+	dist=(int**)calloc(positions+1, sizeof(int*));
+	for(i=0; i<=positions; i++) dist[i]=(int*)calloc(positions+1, sizeof(int));
 
-	score=(int**)calloc(positions+1, sizeof(int*));
-	for(i=0; i<=positions; i++) score[i]=(int*)calloc(1<<valves,sizeof(int));
-
-	for(pos=0; pos<positions; pos++)
-		if(!strncmp(valve[pos].code,"AA",2)) steps[pos][0]=1;
-
-	for(step=1; step<=30; step++) {
-		printf("## Starting step %d\n", step);
-		for(pos=0; pos<positions; pos++) {
-			for(state=0; state<(1<<valves); state++) {
-				if(steps[pos][state]==step) {
-					printf("Looking at position %d (%s), state %d\n", pos, valve[pos].code, state);
-
-					printSit(state, pos, valve[pos].code);
-
-					if(valve[pos].flow&&!checkBit(state,pos)) {
-						// Open valve
-						newstate=setBit(state, pos);
-
-						if((!steps[pos][newstate])||
-						   (score[pos][state]>score[pos][newstate])) {
-							steps[pos][newstate]=step+1;
-							newscore=score[pos][state]+capacity(valve, state);
-							score[pos][newstate]=newscore;
-							printf("    New score of %d, pos %d (%s), stat %d\n", newscore, pos, valve[pos].code, newstate);
-						}
-					}
-
-					for(i=0; valve[pos].next[i]; i++) {
-						printf("  Looking and neighbor %d (%s)\n", valve[pos].next[i], valve[valve[pos].next[i]].code);
-						if((!steps[valve[pos].next[i]][state])||
-						   (score[pos][state]>score[pos][valve[pos].next[i]])) {
-							steps[valve[pos].next[i]][state]=step+1;
-							newscore=score[pos][state]+capacity(valve, state);
-							score[valve[pos].next[i]][state]=newscore;
-						}
-					}
-
-				}
-			}
+	for(i=0; i<=positions; i++) {
+		for(j=0; j<=positions; j++) {
+			dist[i][j]=-1;
 		}
 	}
 
-//	printf("Valve No. for AA: %d\nValve No. for AA: %d\n", valveNo("AA"), valveNo("ZZ"));
-	int max=0;
-	for(pos=0; pos<positions; pos++) {
-		for(state=0; state<(1<<valves); state++) {
-			if(steps[pos][state]==31) {
-				if(score[pos][state]>0) { 
-					if(max<score[pos][state]) {
-						max=score[pos][state];
-						printf("%d/%d\n", score[pos][state], max);
-					}
+	for(i=1; i<=positions; i++) {
+		dist[i][i]=0;
+		for(step=0; step<positions; step++) {
+			for(j=1; j<=positions; j++) {
+				if(dist[i][j]==step) {
+					for(int k=0; valve[j].next[k]; k++)
+						if(dist[i][valve[j].next[k]]<0) dist[i][valve[j].next[k]]=step+1;
 				}
 			}
 		}
+		
 	}
 
+	printMap(dist, positions);
+
+	for(i=1; i<positions; i++)
+               if(!strncmp(valve[i].code,"AA",2)) start=i;
+
+	printf("Starting at position %d (%s)\n", start, valve[start].code);
+
+	dostep(valve, start, 0, 0);
 
 	return 0;
 }
