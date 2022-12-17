@@ -76,9 +76,10 @@ int dostep(int TIME, Tvalve *valve, int tgt, int time, int score, int filter) {
 	}
 
 	for(i=1; valve[i].flow; i++) {
+		if(filter&(1<<(i-1))) continue;
 		if(i==tgt) continue;
 		if(valve[i].open) continue;
-		if(filter&(1<<(i-1))) continue;
+		if(dist[tgt][i]>=TIME-time) continue;
 
 		some=1;
 		dura=dist[tgt][i]+1;
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
 
 	for(i=1; i<=positions; i++) {
 		dist[i][i]=0;
-		for(step=0; step<positions; step++) {
+		for(step=0; step<=positions; step++) {
 			for(j=1; j<=positions; j++) {
 				if(dist[i][j]==step) {
 					for(int k=0; valve[j].next[k]; k++)
@@ -252,7 +253,6 @@ int main(int argc, char *argv[]) {
 	dostep(30, valve, start, 0, 0, 0);
 	printf("Task 1: %d\n", max);
 	
-
 
 	for(filter=0; filter<(1<<valves); filter++) {
 		max=0;
