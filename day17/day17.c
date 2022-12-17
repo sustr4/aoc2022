@@ -7,7 +7,8 @@
 
 // Boundary definitions, set as required
 #define MAXX 10
-#define MAXY 10000
+#define MAXY 100000
+#define STARTY 10000000000000
 
 char **map;
 
@@ -65,22 +66,22 @@ int comp(const void *a, const void *b)
 	return MAXY;
 }*/
 
-int placeShape(char **map, int sh, int x, int y) {
+long long int placeShape(char **map, int sh, int x, long long int y) {
 	int px, py;
-	int ret = y;
+	long long int ret = y;
 	
 	for(py=3; py>=0; py--) {
 		for(px=0; px<=3; px++) {
 			if(shape[sh][(py+MAXY)%MAXY][px]) {
 				map[(y-3+py+MAXY)%MAXY][x+px]=2+sh;
-				ret=(y-3+py+MAXY)%MAXY;
+				ret=(y-3+py);
 			}
 		}
 	}
 
-	return (ret+MAXY)%MAXY;
+	return ret;
 }
-int checkShape(char **map, int sh, int x, int y) {
+int checkShape(char **map, int sh, int x, long long int y) {
 	int px, py;
 
 //	printf("  Checking shape %d at coord %d,%d\n", sh, x, y);
@@ -97,12 +98,12 @@ int checkShape(char **map, int sh, int x, int y) {
 }
 
 // Print a two-dimensional array
-void printMap (char **map, int sy) {
-	int x,y,fb;
+void printMap (char **map, long long int sy) {
+	long long int x,y,fb;
 	
 	fb = sy-3;
 	for(y=fb-3; y<=sy+10; y++) {
-		printf("%d\t", (y+MAXY)%MAXY);
+		printf("%lld\t(%lld)\t", y, (y+MAXY)%MAXY);
 		for(x=0; x<MAXX; x++) {
 			switch(map[(y+MAXY)%MAXY][x]) {
 				case 0:	printf(" "); break;
@@ -154,22 +155,24 @@ int main(int argc, char *argv[]) {
 	int i;
 	readInput();
 	int sh=0;
-	int x, y, cx, py;
+	int x, cx;
+	long long int y;
+	long long int prevy;
 	int gust = 0;
-	int prevy = MAXY-1;
-	long long sum = 0;
-	int ny;
+	long long int ny;
+	long long int py;
 
-	y=MAXY-4;
-	for(i=0; i<2022; i++) {
+	y=STARTY-4;
+	prevy=STARTY;
+	for(i=0; i<1000000000000; i++) {
 		// Starting position for every new stone
 		x=3;
 //		printf("Starting %dth shape %d at %d,%d\n", i, sh, x, y);
 
 		//cleanup around new shape
-		for(py=-3; py<3; py++) {
+		for(py=y-3; py<y+3; py++) {
 			for(cx=1; cx<8; cx++) {
-				map[(y+py+MAXY)%MAXY][cx]=0;
+				map[py%MAXY][cx]=0;
 			}
 		}
 
@@ -182,25 +185,21 @@ int main(int argc, char *argv[]) {
 
 			//Drop
 //			printf(" Trying to drop to depth=%d\n", (y+1+MAXY)%MAXY);
-			if(checkShape(map, sh, x, (y+1+MAXY)%MAXY)) y=(y+1+MAXY)%MAXY;
+			if(checkShape(map, sh, x, y+1)) y=(y+1);
 			else {
 				ny=placeShape(map, sh, x, y);
-				printf("%d. at new y: %d, entrY: %d, prev. y: %d", i, ny, y, prevy);
-				if((ny<prevy)||
-				   ((ny>MAXY-4)&&(prevy<MAXY>>1) )) {
-					printf("...");
-					if(ny<prevy) sum+= prevy-ny;
-					else sum+=prevy-ny+MAXY;
+//				printf("%d. at ny=%lld, prevy=%lld, y on entry=%lld", i, ny, prevy, y);
+				if(ny<prevy) {
 					prevy=ny;
 				}
-				y=(prevy-4+MAXY)%MAXY;
-				printf(" (-> %d), calc. y: %d, sum %lld\n", prevy, y, sum);
+				y=prevy-4;
+//				printf(" (-> %lld), calc. y: %lld, sum %lld\n", prevy, y, STARTY-prevy);
 				break;
 			}
 
 		}
 
-		printMap(map,y);
+//		printMap(map,y);
 		sh = ( sh + 1 ) % 5;
 	}
 	printMap(map,y);
@@ -208,7 +207,7 @@ int main(int argc, char *argv[]) {
 //		printf("%c\n", blow[i]);
 //	}
 
-	printf("Total sum: %lld\n", sum);
+	printf("Total sum: %lld\n", STARTY-prevy);
 
 	return 0;
 }
