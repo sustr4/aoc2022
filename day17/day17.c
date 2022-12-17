@@ -161,10 +161,18 @@ int main(int argc, char *argv[]) {
 	int gust = 0;
 	long long int ny;
 	long long int py;
+	long long int head, multiples, points;
+
+	// After certain point, there are 2647 new levels for every 1730 bricks
+
+	multiples=1000000000000/1730-4;
+	head=1000000000000%1730+4*1730;
+	points=multiples*2647;
 
 	y=STARTY-4;
 	prevy=STARTY;
-	for(i=0; i<1000000000000; i++) {
+//	for(i=0; i<1000000000000; i++) {
+	for(i=0; i<head; i++) {
 		// Starting position for every new stone
 		x=3;
 //		printf("Starting %dth shape %d at %d,%d\n", i, sh, x, y);
@@ -193,6 +201,7 @@ int main(int argc, char *argv[]) {
 					prevy=ny;
 				}
 				y=prevy-4;
+//				printf("%lld\n", prevy);
 //				printf(" (-> %lld), calc. y: %lld, sum %lld\n", prevy, y, STARTY-prevy);
 				break;
 			}
@@ -207,7 +216,7 @@ int main(int argc, char *argv[]) {
 //		printf("%c\n", blow[i]);
 //	}
 
-	printf("Total sum: %lld\n", STARTY-prevy);
+	printf("Total sum: %lld + %lld = %lld (head was %lld)\n", STARTY-prevy, points, STARTY-prevy + points, head);
 
 	return 0;
 }
