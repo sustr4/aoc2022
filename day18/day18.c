@@ -11,45 +11,12 @@
 #define MAXZ 23
 char map[MAXX][MAXY][MAXZ];
 
-// Point structure definition
-typedef struct {
-	int x;
-	int y;
-	int z;
-} TPoint;
-
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
-// Example for calling qsort()
-//qsort(array,count,sizeof(),comp);
-
-
-// Print a two-dimensional array
-void printMap (char **map) {
-	int x,y;
-	for(y=0; y<MAXY; y++) {
-		for(x=0; x<MAXX; x++) {
-			printf("%c", map[y][x]);
-		}
-		printf("\n");
-	}
-}
-// Full block character for maps █
-
-
 // Read input file line by line (e.g., into an array)
 int readInput() {
         FILE * input;
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
-	int count = 0;
 	int x, y, z;
 
         input = fopen("input.txt", "r");
@@ -57,54 +24,21 @@ int readInput() {
 		fprintf(stderr,"Failed to open input file\n");
 		exit(1); }
 
-	// Allocate one-dimensional array of strings
-	// char **inst=(char**)calloc(MAXX, sizeof(char*));
-	// TPoint *inst=(TPoint*)calloc(MAXX, sizeof(TPoint));
-
-	// Allocate a two-dimensional arrray of chars
-	// int x=0, y=0;
-
-
 	memset(map, 0, MAXX*MAXY*MAXZ*sizeof(char));
-
-//        char ***map=calloc(MAXZ,sizeof(char**));
-//	for(int iter=0; iter<MAXZ; iter++) {
-//		map[iter]=(char**)calloc(MAXY,sizeof(char**));
-//		for(int iiter=0; iter<MAXY; iter++) map[iter][iiter]=(char*)calloc(MAXX,sizeof(char));
-//	}
 
         while ((read = getline(&line, &len, input)) != -1) {
 
-		// Read into map
-		// for(x=0; x<MAXX; x++) map[y][x] = line[x];
-		// y++;
-
-		// Copy to string
-		//asprintf(&(inst[count]), "%s", line);	
-
-		// Read into array
 		sscanf(line,"%d,%d,%d",
 			&x,
 			&y,
 			&z);
 
 		map[x][y][z]=1;
-
-		// Read tokens from single line
-		//char *token;
-		//token = strtok(line, ",");
-		//while( 1 ) {
-		//	if(!(token = strtok(NULL, ","))) break;
-		//}
-
-		count++;
 	}
 
 	fclose(input);
         if (line)
         free(line);
-
-//	printMap(map);
 
 	return 0;
 }
