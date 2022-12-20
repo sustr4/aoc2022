@@ -10,6 +10,8 @@
 #define MAXX 34
 #define MAXY 26
 
+#define DURATION 32
+
 int *max;
 int *history;
 
@@ -139,7 +141,7 @@ void printType(int i) {
 }
 
 void printHistory() {
-	for(int i=1; i<=24; i++) {
+	for(int i=1; i<=DURATION; i++) {
 		printf("%d:", i);
 		switch(history[i]) {
 
@@ -150,7 +152,7 @@ void printHistory() {
 			case 2:
 				printf("obsidian, "); break;
 			case 3:
-				printf("geode (%d), ", 24-i); break;
+				printf("geode (%d), ", DURATION-i); break;
 			case 4:
 				printf("n, "); break;
 			default:
@@ -166,9 +168,10 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 	int i;
 	int next;
 
-	if(time>24) {
+	if(time>DURATION) {
 		if(materialCount[3]>max[bp.no]) {
 			max[bp.no]=materialCount[3];
+
 			printf("\nNew maximum for blueprint %d: %d\n", bp.no, max[bp.no]);
 				printf("M%02d: with robots: [", time);
 				for(i=0; i<4; i++) printf("%d,", roboCount[i]);
@@ -194,7 +197,7 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 	for(next=0; next<4; next++) {
 
 				if(debug) {
-					printf("\n== Minute %02d== \t\t Start of round:       [", time);
+					printf("\n== Minute %02d == \t Start of round:        [", time);
 					for(i=0; i<4; i++) printf("%d,", roboCount[i]);
 					printf("] and material: [");
 					for(i=0; i<4; i++) printf("%d,", materialCount[i]);
@@ -202,17 +205,17 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 				}
 
 		// In case there are insufficient resources and also no capacity to produce them
-		if((materialCount[0]<bp.robot[next].ore)&&(!roboCount[0])) continue;
-		if((materialCount[1]<bp.robot[next].clay)&&(!roboCount[1])) continue;
-		if((materialCount[2]<bp.robot[next].obsidian)&&(!roboCount[2])) continue;
+		if((materialCount[0])&&(!roboCount[0])) continue; // Ore required but no robot to make it
+		if((materialCount[1])&&(!roboCount[1])) continue; // Clay required but no robot to make it
+		if((materialCount[2])&&(!roboCount[2])) continue; // Obsidian required but no robot to make it
 
-		for(int j=0; j<2; j++) wr[j]=0;
+		for(int j=0; j<=2; j++) wr[j]=1;
 
 		if(debug) {
 			printf("  Considering ");
 			printType(next);
 			if(next<4) {
-				printf(" cost [%d, %d, %d]\n",
+				printf("-collecting robot cost [%d, %d, %d]\n",
 					bp.robot[next].ore,
 					bp.robot[next].clay,
 					bp.robot[next].obsidian);
@@ -226,9 +229,13 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 		obsidianneed=bp.robot[next].obsidian-materialCount[2];
 		if(obsidianneed<0) obsidianneed=0;
 
-		if(oreneed) wr[0]=oreneed/roboCount[0]+(oreneed%roboCount[0]?2:1);
-		if(clayneed) wr[1]=clayneed/roboCount[1]+(clayneed%roboCount[1]?2:1);
-		if(obsidianneed) wr[2]=obsidianneed/roboCount[2]+(obsidianneed%roboCount[2]?2:1);
+		if(oreneed&&roboCount[0]) wr[0]+=oreneed/roboCount[0]+(oreneed%roboCount[0]?1:0);
+		if(clayneed&&roboCount[1]) wr[1]+=clayneed/roboCount[1]+(clayneed%roboCount[1]?1:0);
+		if(obsidianneed&&roboCount[2]) wr[2]+=obsidianneed/roboCount[2]+(obsidianneed%roboCount[2]?1:0);
+
+		if(debug) {
+			printf("  Would have to wait %d for ore (%d more), %d for clay (%d more) and %d for obsidian (%d more).\n", wr[0], oreneed, wr[1], clayneed, wr[2], obsidianneed);
+		}
 
 		waitrounds=wr[0];
 		if(wr[1]>waitrounds) waitrounds=wr[1];
@@ -253,13 +260,21 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 		   	NEWmaterialCount[2]-=bp.robot[next].obsidian;
 		}
 
-		// Grow resources with robots available from the beginning
-		for(i=0; i<4; i++)
-			NEWmaterialCount[i]=NEWmaterialCount[i]+roboCount[i]*waitrounds;
+		// Check if build overruns
+		if(time+waitrounds<=DURATION) {
+			// Grow resources with robots available from the beginning
+			for(i=0; i<4; i++)
+				NEWmaterialCount[i]=NEWmaterialCount[i]+roboCount[i]*waitrounds;
 
-		// Build the new robot
-		if(next<4) {
-			NEWroboCount[next]++;
+			// Build the new robot
+			if(next<4) {
+				NEWroboCount[next]++;
+			}
+		}
+		else {	// Not enough time to build robot. Just collect resources up to the end
+			waitrounds=DURATION-time+1;
+			for(i=0; i<4; i++)
+				NEWmaterialCount[i]=NEWmaterialCount[i]+roboCount[i]*waitrounds;
 		}
 
 				if(debug) {
@@ -269,7 +284,7 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 					for(i=0; i<4; i++) printf("%d,", NEWmaterialCount[i]);
 					printf("]\n");
 				}
-		// Next minute
+		// Next robot
 		build(NEWroboCount, NEWmaterialCount, bp, time+waitrounds);
 		
 		
@@ -279,7 +294,7 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 
 /*
 
-//				printf("\n== Minue %02d== \t\t Start of round:          [", time);
+//				printf("\n== Minue %02d == \t\t Start of round:          [", time);
 //				for(i=0; i<4; i++) printf("%d,", roboCount[i]);
 //				printf("] and material: [");
 //				for(i=0; i<4; i++) printf("%d,", materialCount[i]);
@@ -355,8 +370,9 @@ int main(int argc, char *argv[]) {
 	for(i=1; blueprint[i].no; i++) {
 		printf("%d: %d\n", i, blueprint[i].no);
 		for(j=0; j<4; j++) {
-			printf("  %d:\t%4d ore\t%4d clay\t%4d obsidian\n",
-				j,
+			printType(j);
+			if(j!=2) printf("\t");
+			printf(":\t%4d ore\t%4d clay\t%4d obsidian\n",
 				blueprint[i].robot[j].ore,
 				blueprint[i].robot[j].clay,
 				blueprint[i].robot[j].obsidian);
@@ -368,19 +384,20 @@ int main(int argc, char *argv[]) {
 	}
 
 	roboCount[0]=1;
-	debug=1;
+	debug=0;
 	for(i=1; blueprint[i].no; i++) {
 		build(roboCount, materialCount, blueprint[i], 1);
 	}
 
 	int sum=0;
-	for(i=1; i<2; i++) {
-//	for(i=1; blueprint[i].no; i++) {
+//	for(i=1; i<2; i++) {
+	for(i=1; blueprint[i].no; i++) {
 		printf("%d * %d = %d\n", i, max[i], i*max[i]);
 		sum+=i*max[i];
 	}
 
 	printf("%d\n", sum);
+	printf("%d\n", max[1]*max[2]*max[3]);
 
 	return 0;
 }
