@@ -8,7 +8,7 @@
 
 // Boundary definitions, set as required
 #define MAXX 34
-#define MAXY 26
+#define MAXY 30
 
 #define DURATION 32
 
@@ -208,6 +208,10 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 		if((materialCount[0])&&(!roboCount[0])) continue; // Ore required but no robot to make it
 		if((materialCount[1])&&(!roboCount[1])) continue; // Clay required but no robot to make it
 		if((materialCount[2])&&(!roboCount[2])) continue; // Obsidian required but no robot to make it
+
+		if((next==0)&&(roboCount[0]>=bp.maxneed.ore)) continue; // Already enough robots to supply any need
+		if((next==1)&&(roboCount[1]>=bp.maxneed.clay)) continue; // Already enough robots to supply any need
+		if((next==2)&&(roboCount[2]>=bp.maxneed.obsidian)) continue; // Already enough robots to supply any need
 
 		for(int j=0; j<=2; j++) wr[j]=1;
 
