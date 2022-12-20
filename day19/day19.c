@@ -139,7 +139,7 @@ void printType(int i) {
 }
 
 void printHistory() {
-	for(int i=1; i<=24; i++) {
+	for(int i=1; i<=32; i++) {
 		printf("%d:", i);
 		switch(history[i]) {
 
@@ -150,7 +150,7 @@ void printHistory() {
 			case 2:
 				printf("obsidian, "); break;
 			case 3:
-				printf("geode (%d), ", 24-i); break;
+				printf("geode (%d), ", 32-i); break;
 			case 4:
 				printf("n, "); break;
 			default:
@@ -166,7 +166,7 @@ int build(int roboCount[4], int materialCount[4], TBlueprint bp, int time) {
 	int i;
 	int next;
 
-	if(time>24) {
+	if(time>32) {
 		if(materialCount[3]>max[bp.no]) {
 			max[bp.no]=materialCount[3];
 			printf("\nNew maximum for blueprint %d: %d\n", bp.no, max[bp.no]);
