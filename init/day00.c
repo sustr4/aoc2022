@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<malloc.h>
 #include<limits.h>
+#include<assert.h>
 
 // Boundary definitions, set as required
 #define MAXX 76
