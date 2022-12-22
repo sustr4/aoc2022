@@ -193,13 +193,19 @@ int main(int argc, char *argv[]) {
 	int i=0, j;	
 //	array = readInput();
 	map = readInput();
-	int x=0, y=0;
+	int x=0, y=0, nx, ny;
 	TPoint d = {1, 0, 0};
+	TPoint nd;
 
 //	printMap(map);
 
 	// Jump to the first actual tile
 	while(map[y][x]!='.') x++;
+
+	// TODO: Remove after testing:
+//	x=49; y=102; d=rotate(d, 'L'); 
+
+	visited[y][x]=d.dir+'0';
 
 	printf("Starting at [%d,%d]\n", x+1, y+1);
 
@@ -210,42 +216,155 @@ int main(int argc, char *argv[]) {
 		}
 		else { // Move
 			for(j=0; j<inst[i].steps; j++) {
-				// Move in x
-				int nx=x+d.x;
-				if ((nx<0)||
-				    ((d.x==-1)&&(map[y][nx]<=' '))) {
-					nx=maxlen-1;
-					while((map[y][nx]!='.')&&(map[y][nx]!='#')) nx--;
-					if(map[y][nx]=='#') goto noXmovement;
-				}
-				if ((nx>=MAXX)||
-				    ((d.x==1)&&(map[y][nx]<=' '))) {
-					nx=0;
-					while((map[y][nx]!='.')&&(map[y][nx]!='#')) nx++;
-					if(map[y][nx]=='#') goto noXmovement;
-				}
-				if (map[y][nx]=='#') goto noXmovement;
 
-				x=nx;
-noXmovement:
-				// Move in y
-				int ny=y+d.y;
-				if ((ny<0)||
-				    ((d.y==-1)&&(map[ny][x]<=' '))) {
-					ny=maxheight;
-					while((map[ny][x]!='.')&&(map[ny][x]!='#')) ny--;
-					if(map[ny][x]=='#') goto noYmovement;
-				}
-				if ((ny>=MAXY)||
-				    ((d.y==1)&&(map[ny][x]<=' '))) {
-					ny=0;
-					while((map[ny][x]!='.')&&(map[ny][x]!='#')) ny++;
-					if(map[ny][x]=='#') goto noYmovement;
-				}
-				if (map[ny][x]=='#') goto noYmovement;
+				nx=x;
+				ny=y;
+				nd=d;
 
+				if(d.x==-1) { // Going left
+					switch(y/50) {
+						case 0:
+							if(nx>50) nx--;
+							else {
+								nx=0;
+								ny=149-y;
+								nd=rotate(nd, 'R');
+								nd=rotate(nd, 'R');
+							}
+							break;
+						case 1:
+							if(nx==50) {
+								nx=y-50;
+								ny=100;
+								nd=rotate(nd, 'L');
+							}
+							else nx--;	
+							break;
+						case 2:
+							if(nx==0) {
+								nx=50;
+								ny=149-y;
+								nd=rotate(nd, 'R');
+								nd=rotate(nd, 'R');
+							}
+							else nx--;
+							break;
+						case 3:
+							if(nx==0) {
+								ny=0;
+								nx=y-100;
+								nd=rotate(nd, 'L');
+							}
+							else nx--;
+							break;
+						default:
+							assert(0);
+					}
+				}
+				else if(d.x==1) { // Going right
+					switch(y/50) {
+						case 0:
+							if(nx<149) nx++;
+							else {
+								nx=99;
+								ny=149-y;
+								nd=rotate(nd, 'R');
+								nd=rotate(nd, 'R');
+							}
+							break;
+						case 1:
+							if(nx==99) {
+								ny=49;
+								nx=y+50;
+								nd=rotate(nd, 'L');
+							}
+							else nx++;
+							break;
+						case 2:
+							if(nx<99) nx++;
+							else {
+								nx=149;
+								ny=149-y;
+								nd=rotate(nd, 'R');
+								nd=rotate(nd, 'R');
+							}
+							break;
+						case 3:
+							if(nx==49) {
+								ny=149;
+								nx=y-100;
+								nd=rotate(nd, 'L');
+							}
+							else nx++;
+							break;
+						default:
+							assert(0);
+					}
+				}
+				else if(d.y==1) { // Going down
+					switch(x/50) {
+						case 0:
+							if(ny==199) {
+								ny=0;
+								nx=nx+100;
+							}
+							else ny++;
+							break;
+						case 1:
+							if(y<149) ny++;
+							else {
+								nx=49;
+								ny=x+100;
+								nd=rotate(nd,'R');
+							}
+							break;
+						case 2:
+							if(ny==49) {
+								nx=99;
+								ny=x-50;
+								nd=rotate(nd,'R');
+							}
+							else ny++;
+							break;
+						default:
+							assert(0);
+					}
+				}
+				else if(d.y==-1) { // Going up
+					switch(x/50) {
+						case 0:
+							if(ny==100) {
+								nx=50;
+								ny=x+50;
+								nd=rotate(nd,'R');
+							}
+							else ny--;
+							break;
+						case 1:
+							if(ny==0) {
+								nx=0;
+								ny=x+100;
+								nd=rotate(nd,'R');
+							}
+							else ny--;
+							break;
+						case 2:
+							if(ny==0) {
+								ny=199;
+								nx=x-100;
+							}
+							else ny--;
+							break;
+						default:
+							assert(0);
+					}
+				}
+
+
+				if (map[ny][nx]=='#') break;
 				y=ny;
-noYmovement:
+				x=nx;
+				d=nd;
 
 				visited[y][x]=(char)d.dir+'0';
 			}
