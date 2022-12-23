@@ -8,7 +8,6 @@
 
 // Boundary definitions, set as required
 #define MAXX 2500
-#define MAXY 26
 
 // Point structure definition
 typedef struct {
@@ -19,19 +18,6 @@ typedef struct {
 
 char firstCons[] = {'N', 'S', 'W', 'E', 0};
 char globalOrder[] = {'N', 'S', 'W', 'E', 0};
-
-// Comparator function example
-int comp(const void *a, const void *b)
-{
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
-}
-
-
-// Example for calling qsort()
-//qsort(elf,count,sizeof(),comp);
-
 
 // Print a two-dimensional elf
 void printMap (TElf *elf) {
@@ -51,7 +37,7 @@ void printMap (TElf *elf) {
 	}
 
 	for(y=miny-1; y<=maxy+1; y++) {
-		printf("%3d ", y%100);
+		printf("%4d ", y%1000);
 		for(x=minx-1; x<=maxx+1; x++) {
 			draw='.';
 			for(i=0; elf[i].order[0]; i++)
@@ -66,8 +52,6 @@ void printMap (TElf *elf) {
 		printf("\n");
 	}
 }
-// Full block character for maps █
-
 
 // Read input file line by line (e.g., into an elf)
 TElf *readInput() {
@@ -85,11 +69,6 @@ TElf *readInput() {
 
 	TElf *inst=(TElf*)calloc(MAXX, sizeof(TElf));
 
-	// Allocate a two-dimensional arrray of chars
-	// int x=0, y=0;
-        // char **map=calloc(MAXY,sizeof(char*));
-	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
-
         while ((read = getline(&line, &len, input)) != -1) {
 
 		for(int i = 0; i<strlen(line); i++) {
@@ -101,15 +80,11 @@ TElf *readInput() {
 			}
 		}
 		count++;
-
-
 	}
 
 	fclose(input);
         if (line)
         free(line);
-
-//	printMap(map);
 
 	return inst;
 }
@@ -263,14 +238,9 @@ TElf *step(TElf *elf, int *somemove) {
 int main(int argc, char *argv[]) {
 
 	TElf *elf;
-	int i=0;	
 	int moved=0;	
 	elf = readInput();
 	int round;
-
-	for(i=0; elf[i].order[0]; i++) {
-//		printf("[%d.%d], %s\n", elf[i].x, elf[i].y, elf[i].order);
-	}
 
 	for(round=0; 1; round++) {
 		elf=step(elf, &moved);
