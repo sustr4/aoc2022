@@ -31,11 +31,12 @@ int comp(const void *a, const void *b)
 
 
 // Print a two-dimensional array
-void printMap (char ***map, int r) {
+void printMap (char ***map, int ***dist, int r) {
 	int x,y;
 	for(y=0; y<MAXY; y++) {
 		for(x=0; x<MAXX; x++) {
-			printf("%c", map[r][y][x]?map[r][y][x]:' ');
+			if(dist[r][y][x]) printf("%d", dist[r][y][x]%10);
+			else printf("%c", map[r][y][x]?map[r][y][x]:' ');
 		}
 		printf("\n");
 	}
@@ -45,7 +46,7 @@ void printMap (char ***map, int r) {
 
 
 // Read input file line by line (e.g., into an array)
-TPoint *readInput() {
+char ***readInput() {
 //int readInput() {
         FILE * input;
         char * line = NULL;
@@ -130,21 +131,48 @@ TPoint *readInput() {
         if (line)
         free(line);
 
-	for(int i=0; i<10; i++) {
-		printMap(map, i);
-	}
+//	for(int i=0; i<10; i++) {
+//		printMap(map, NULL, i);
+//	}
 
-	return 0;
-//	return inst;
-//	return map;
+	return map;
 }
 
 int main(int argc, char *argv[]) {
 
-//	TPoint array;
-//	int i=0;	
-//	array = readInput();
-	readInput();
+	int i=0,r,y,x;	
+	char ***map = readInput();
+        int ***dist=calloc(MAXT,sizeof(int**));
+	for(int iter=0; iter<MAXT; iter++) {
+		dist[iter]=calloc(MAXY,sizeof(int*));
+		for(int iiter=0; iiter<MAXY; iiter++) {
+			dist[iter][iiter]=calloc(MAXX,sizeof(int));
+		}
+	}
+
+	dist[0][0][1]=1;
+
+	for(r=1; r<MAXT; r++) {
+		for(y=0; y<MAXY; y++) {
+			for(x=0; x<MAXX; x++) {
+				if(map[r][y][x]==0) { // Free space, can move to it
+					if((dist[r-1][y][x])||
+					   ((x>0)&&(dist[r-1][y][x-1]))||
+					   ((x<MAXY-1)&&(dist[r-1][y][x+1]))||
+					   ((y>0)&&(dist[r-1][y-1][x]))||
+					   ((y<MAXY-1)&&(dist[r-1][y+1][x]))) dist[r][y][x]=r;
+				}
+			}
+		}
+
+		printMap(map, dist, r);
+	}
+
+	for(r=0; r<MAXT; r++) if(dist[r][MAXY-1][MAXX-2]) break;
+	printf("Distance: %d\n", dist[r][MAXY-1][MAXX-2]);
+
+	
+
 
 //	for(i=0; array[i]; i++) {
 //		printf("%d\n", array[i]);
