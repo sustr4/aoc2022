@@ -16,7 +16,6 @@ touch "day${DAY}/input.txt"
 cd "day${DAY}"
 ls
 git add *
-make
 
 echo Now cd into "day${DAY}"
 
