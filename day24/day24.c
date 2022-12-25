@@ -9,7 +9,7 @@
 // Boundary definitions, set as required
 #define MAXX 122
 #define MAXY 27
-#define MAXT 900
+#define MAXT 1000
 
 // Point structure definition
 typedef struct {
@@ -40,7 +40,7 @@ void printMap (char ***map, int ***dist, int r) {
 		}
 		printf("\n");
 	}
-	printf("\n");
+	printf("ROUND:%4d\n",r);
 }
 // Full block character for maps █
 
@@ -140,7 +140,10 @@ char ***readInput() {
 
 int main(int argc, char *argv[]) {
 
-	int i=0,r,y,x;	
+	int beentoend=0;
+	int beentostart=1;
+
+	int r,y,x;	
 	char ***map = readInput();
         int ***dist=calloc(MAXT,sizeof(int**));
 	for(int iter=0; iter<MAXT; iter++) {
@@ -158,9 +161,34 @@ int main(int argc, char *argv[]) {
 				if(map[r][y][x]==0) { // Free space, can move to it
 					if((dist[r-1][y][x])||
 					   ((x>0)&&(dist[r-1][y][x-1]))||
-					   ((x<MAXY-1)&&(dist[r-1][y][x+1]))||
+					   ((x<MAXX-1)&&(dist[r-1][y][x+1]))||
 					   ((y>0)&&(dist[r-1][y-1][x]))||
 					   ((y<MAXY-1)&&(dist[r-1][y+1][x]))) dist[r][y][x]=r;
+				}
+			}
+		}
+
+		if(!beentoend) {
+			if(dist[r][MAXY-1][MAXX-2]) { // Just reached the end
+				printf("Distance to end: %d\n", dist[r][MAXY-1][MAXX-2]);
+				beentoend=1;
+				beentostart=0;
+				for(y=0; y<MAXY-1; y++) {
+					for(x=0; x<MAXX; x++) {
+						dist[r][y][x]=0;
+					}
+				}
+			}
+		}
+		else if(!beentostart) {
+			if(dist[r][0][1]) { // Just reached the end
+				printf("Distance to start: %d\n", dist[r][0][1]);
+				beentoend=0;
+				beentostart=1;
+				for(y=1; y<MAXY; y++) {
+					for(x=0; x<MAXX; x++) {
+						dist[r][y][x]=0;
+					}
 				}
 			}
 		}
@@ -168,8 +196,8 @@ int main(int argc, char *argv[]) {
 		printMap(map, dist, r);
 	}
 
-	for(r=0; r<MAXT; r++) if(dist[r][MAXY-1][MAXX-2]) break;
-	printf("Distance: %d\n", dist[r][MAXY-1][MAXX-2]);
+//	for(r=0; r<MAXT; r++) if(dist[r][MAXY-1][MAXX-2])
+//		printf("Distance: %d\n", dist[r][MAXY-1][MAXX-2]);
 
 	
 
