@@ -66,6 +66,7 @@ TPoint *readInput() {
 	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
 
         while ((read = getline(&line, &len, input)) != -1) {
+		line[strlen(line)-1] = 0; // Truncate the NL
 
 		// Read into map
 		// for(x=0; x<MAXX; x++) map[y][x] = line[x];
