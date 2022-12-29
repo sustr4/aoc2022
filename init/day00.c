@@ -103,7 +103,7 @@ TPoint *readInput() {
 
 int main(int argc, char *argv[]) {
 
-//	TPoint array;
+//	TPoint *array;
 //	int i=0;	
 //	array = readInput();
 	readInput();
