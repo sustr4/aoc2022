@@ -20,9 +20,9 @@ typedef struct {
 // Comparator function example
 int comp(const void *a, const void *b)
 {
-  const int *da = (const int *) a;
-  const int *db = (const int *) b;
-  return (*da > *db) - (*da < *db);
+	const int *da = (const int *) a;
+	const int *db = (const int *) b;
+	return (*da > *db) - (*da < *db);
 }
 
 // Example for calling qsort()
@@ -45,14 +45,14 @@ void printMap (char **map) {
 // Read input file line by line (e.g., into an array)
 TPoint *readInput() {
 //int readInput() {
-        FILE * input;
-        char * line = NULL;
-        size_t len = 0;
-        ssize_t read;
+	FILE * input;
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
 	int count = 0;
 
-        input = fopen("input.txt", "r");
-        if (input == NULL) {
+	input = fopen("input.txt", "r");
+	if (input == NULL) {
 		fprintf(stderr,"Failed to open input file\n");
 		exit(1); }
 
@@ -62,10 +62,10 @@ TPoint *readInput() {
 
 	// Allocate a two-dimensional arrray of chars
 	// int x=0, y=0;
-        // char **map=calloc(MAXY,sizeof(char*));
+	// char **map=calloc(MAXY,sizeof(char*));
 	// for(int iter=0; iter<MAXY; iter++) map[iter]=calloc(MAXX,sizeof(char));
 
-        while ((read = getline(&line, &len, input)) != -1) {
+	while ((read = getline(&line, &len, input)) != -1) {
 		line[strlen(line)-1] = 0; // Truncate the NL
 
 		// Read into map
@@ -91,8 +91,8 @@ TPoint *readInput() {
 	}
 
 	fclose(input);
-        if (line)
-        free(line);
+	if (line)
+	free(line);
 
 //	printMap(map);
 
